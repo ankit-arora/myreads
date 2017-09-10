@@ -1,13 +1,24 @@
 import React, { Component } from 'react';
 
 class Book extends Component {
-    getAuthorsString = authors => (
-        authors.reduce((authorsStr, author, index) => {
+    getAuthorsString = authors => {
+        if (typeof authors === 'undefined') {
+            return '';
+        }
+        return authors.reduce((authorsStr, author, index) => {
             if (index === 0) {
                 return author;
             }
             return `${authorsStr}, ${author}`;
-        }, ''));
+        }, '');
+    };
+
+    getThumbnail = book => {
+        if (typeof book.imageLinks === 'undefined') {
+            return '/no_cover_thumb.gif';
+        }
+        return book.imageLinks.thumbnail;
+    };
 
     render() {
         const { book, onChangeShelf } = this.props;
@@ -20,12 +31,12 @@ class Book extends Component {
                             width: 128,
                             height: 193,
                             backgroundImage:
-                                `url("${book.imageLinks.thumbnail}")`
+                                `url("${this.getThumbnail(book)}")`
                         }}
                     />
                     <div className="book-shelf-changer">
                         <select
-                            value={book.shelf}
+                            value={book.shelf ? book.shelf : 'none'}
                             onChange={(e) => (
                                 onChangeShelf(book, e.target.value)
                             )}

@@ -8,14 +8,14 @@ import * as BooksAPI from './BooksAPI';
 
 class App extends Component {
     state = {
-        books: []
+        booksInLibrary: []
     };
 
     componentDidMount() {
-        BooksAPI.getAll().then(books => {
-            console.log(books);
+        BooksAPI.getAll().then(booksInLibrary => {
+            // console.log(books);
             this.setState({
-                books
+                booksInLibrary
             });
         });
     }
@@ -24,28 +24,39 @@ class App extends Component {
         console.log(book.id);
         console.log(newShelf);
         this.setState((state) => {
-            const books = state.books.map((b) => {
-                if (b.id === book.id) {
-                    const newBook = b;
-                    newBook.shelf = newShelf;
-                    return newBook;
-                }
-                return b;
-            });
+            const bookPresentInLibrary = state.booksInLibrary
+                .filter(b => b.id === book.id).length > 0;
+            let booksInLibrary;
+            if (bookPresentInLibrary) {
+                booksInLibrary = state.booksInLibrary.map((b) => {
+                    if (b.id === book.id) {
+                        const newBook = b;
+                        newBook.shelf = newShelf;
+                        return newBook;
+                    }
+                    return b;
+                });
+            } else {
+                const newBook = book;
+                newBook.shelf = newShelf;
+                booksInLibrary = [...state.booksInLibrary, newBook];
+            }
+
             return {
-                books
+                booksInLibrary
             };
         });
         BooksAPI.update(book, newShelf);
     };
 
     render() {
-        const { books } = this.state;
-        const booksCurrentlyReading = books.filter((book) => book.shelf === 'currentlyReading')
+        const { booksInLibrary } = this.state;
+        const booksCurrentlyReading = booksInLibrary
+            .filter((book) => book.shelf === 'currentlyReading')
             .sort(sortBy('title'));
-        const booksWantToRead = books.filter((book) => book.shelf === 'wantToRead')
+        const booksWantToRead = booksInLibrary.filter((book) => book.shelf === 'wantToRead')
             .sort(sortBy('title'));
-        const booksRead = books.filter((book) => book.shelf === 'read')
+        const booksRead = booksInLibrary.filter((book) => book.shelf === 'read')
             .sort(sortBy('title'));
         return (
             <div className="app">
@@ -84,7 +95,12 @@ class App extends Component {
                 />
                 <Route
                     path='/search'
-                    component={SearchBox}
+                    render={() => (
+                        <SearchBox
+                            booksInLibrary={booksInLibrary}
+                            onChangeShelf={this.changeShelf}
+                        />
+                    )}
                 />
             </div>
         );
