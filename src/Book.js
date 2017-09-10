@@ -15,7 +15,7 @@ class Book extends Component {
 
     getThumbnail = book => {
         if (typeof book.imageLinks === 'undefined') {
-            return '/no_cover_thumb.gif';
+            return '';
         }
         return book.imageLinks.thumbnail;
     };
